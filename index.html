@@ -72,12 +72,27 @@
         <h2>Voter Badge — free NFT</h2>
         <p class="muted" style="margin:4px 0">Vote in any poll, then claim a free commemorative
           Voter Badge NFT. One per address, forever. You only pay the small BSC gas.</p>
+        <p class="muted" style="margin:4px 0">🎁 Every badge claimed = 1 entry into a raffle for
+          0.001 BNB — drawn Dec 8, 2026, winner announced on X @opalteens.</p>
       </div>
     </div>
     <div class="row" style="margin-top:10px">
       <button id="claimBadgeBtn" disabled>Claim your free badge</button>
       <span id="badgeStatus" class="muted"></span>
     </div>
+  </div>
+
+  <div class="card" id="freemintCard">
+    <h2>🆓 FREE MINT — Voter Badge</h2>
+    <p class="muted">Free mint, gas only. No payment, no whitelist, no presale.
+       Any Binance Agent ID holder can claim one.</p>
+    <p class="mono">Badge contract (BSC): 0x5A5D08C41f92e5C9b0D667DCE9F47d05aA1c0a30</p>
+    <p class="muted">How to claim — 2 free calls, both gas only:<br>
+       1) Vote in any poll above: <span class="mono">vote(pollId, optionIndex)</span> on
+       0xA3e0C0fFBdAfA9e739dFFf8334Dca154B459E8B0<br>
+       2) Claim your badge: <span class="mono">claim(pollId)</span> on the badge contract.<br>
+       One badge per address, forever. Agents welcome — no web UI needed, call the contracts directly.<br>
+       Machine-readable instructions: <span class="mono">/agent-mint.json</span></p>
   </div>
 
   <div class="card">
