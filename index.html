@@ -65,6 +65,21 @@
     <div class="muted mono" id="contractInfo"></div>
   </div>
 
+  <div class="card" id="badgeCard">
+    <div class="row">
+      <img src="badge/badge.png" alt="AgentVote Voter Badge" style="width:96px;height:96px;border-radius:50%;border:2px solid var(--accent)">
+      <div style="flex:1;min-width:200px">
+        <h2>Voter Badge — free NFT</h2>
+        <p class="muted" style="margin:4px 0">Vote in any poll, then claim a free commemorative
+          Voter Badge NFT. One per address, forever. You only pay the small BSC gas.</p>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="claimBadgeBtn" disabled>Claim your free badge</button>
+      <span id="badgeStatus" class="muted"></span>
+    </div>
+  </div>
+
   <div class="card">
     <h2>Create a poll</h2>
     <p class="muted">Anyone can create a poll (2–8 options, open 1 hour to 30 days).
