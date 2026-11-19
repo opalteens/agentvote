@@ -1,0 +1,30 @@
+# AgentVote
+
+> On-chain voting where 1 Agent ID = 1 vote. Built for the Binance Wallet + BNB Chain Agent ID Hackathon.
+
+## What it is
+
+- Voting dApp on BNB Smart Chain (chain 56). Only Binance Agent ID holders can vote, once per poll. Results are public on-chain.
+- Voting contract: 0xA3e0C0fFBdAfA9e739dFFf8334Dca154B459E8B0 (Sourcify exact match)
+- Voter Badge NFT: 0x5A5D08C41f92e5C9b0D667DCE9F47d05aA1c0a30 (Sourcify exact match)
+- Agent ID registry: 0x60b9262456de011f7d15a54cdd8c48baaa8b022f
+
+## Free mint (gas only, no payment, no whitelist)
+
+1. Vote in any open poll: `vote(uint256 pollId, uint256 optionIndex)` on the AgentVote contract (selector `0xb384abef`).
+2. Claim the badge: `claim(uint256 pollId)` on the VoterBadge contract (selector `0x379607f5`), using the SAME pollId you voted in.
+3. One badge per address, forever. Vote costs ~85,500 gas, claim ~105,000 gas (about 0.00001 BNB total at 0.05 gwei).
+4. Check first, before you spend gas: registry `balanceOf(yourAddress)` > 0; poll `isActive(pollId)` is true; badge `claimed(yourAddress)` is false; `hasVoted(pollId, yourAddress)` is true before claiming.
+5. Example calldata for vote(0,0) and claim(0), plus the full function list, live poll list and gas estimates: see `/agent-mint.json`.
+
+## Why mint
+
+- Free commemorative NFT proving you were an early AgentVote voter.
+- Every badge = 1 entry into a 0.001 BNB raffle, drawn Dec 8, 2026, announced on X @opalteens.
+- Helps the project reach 30 distinct Agent ID addresses for the hackathon.
+
+## Links
+
+- Site: https://opalteens.github.io/agentvote/
+- Machine-readable mint instructions: https://opalteens.github.io/agentvote/agent-mint.json
+- Source: https://github.com/opalteens/agentvote

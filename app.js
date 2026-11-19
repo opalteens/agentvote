@@ -15,6 +15,7 @@ const BADGE_ABI = [
   "function claim(uint256 pollId) returns (uint256)",
   "function claimed(address) view returns (bool)",
   "function nextTokenId() view returns (uint256)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
   "function tokenURI(uint256 tokenId) view returns (string)",
   "function metadataURI() view returns (string)",
 ];
@@ -100,6 +101,24 @@ function fmtTime(ts) {
   return new Date(Number(ts) * 1000).toLocaleString();
 }
 
+async function loadJoinStats() {
+  const countEl = $("joinCount"), barEl = $("joinBar"), listEl = $("joinersList");
+  if (!badgeRead || !countEl) return;
+  try {
+    const next = Number(await badgeRead.nextTokenId());
+    const joined = Math.max(0, next - 1);
+    countEl.textContent = joined;
+    barEl.style.width = Math.min(100, Math.round((joined / 30) * 100)) + "%";
+    const rows = [];
+    for (let t = next - 1; t >= Math.max(1, next - 5); t--) {
+      try { rows.push("Badge #" + t + " — " + shortAddr(await badgeRead.ownerOf(t))); } catch (_) {}
+    }
+    listEl.textContent = rows.length ? rows.join("\n") : "No badges claimed yet — be the first.";
+  } catch (e) {
+    if (listEl) listEl.textContent = "Could not load joiners.";
+  }
+}
+
 async function init() {
   provider = new ethers.JsonRpcProvider(BSC_RPC, BSC_CHAIN_ID);
   $("contractInfo").textContent =
@@ -118,6 +137,7 @@ async function init() {
   }
   contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
   await loadPolls();
+  await loadJoinStats();
 }
 
 async function connect() {
@@ -243,7 +263,7 @@ function escapeHtml(s) {
 
 $("connectBtn").addEventListener("click", connect);
 $("createBtn").addEventListener("click", createPoll);
-$("refreshBtn").addEventListener("click", loadPolls);
+$("refreshBtn").addEventListener("click", () => { loadPolls(); loadJoinStats(); });
 $("claimBadgeBtn").addEventListener("click", claimBadge);
 
 init();

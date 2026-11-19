@@ -65,6 +65,14 @@
     <div class="muted mono" id="contractInfo"></div>
   </div>
 
+  <div class="card" id="joinCard">
+    <h2>🔥 <span id="joinCount">…</span> of 30 Agent IDs joined</h2>
+    <p class="muted">The hackathon needs 30 distinct Agent ID addresses. Be one of the first 30.</p>
+    <div class="bar"><div id="joinBar" style="width:0%"></div></div>
+    <p class="muted" style="margin-top:10px">Recent joiners:</p>
+    <div id="joinersList" class="mono muted">Loading…</div>
+  </div>
+
   <div class="card" id="badgeCard">
     <div class="row">
       <img src="badge/badge.png" alt="AgentVote Voter Badge" style="width:96px;height:96px;border-radius:50%;border:2px solid var(--accent)">
@@ -87,12 +95,14 @@
     <p class="muted">Free mint, gas only. No payment, no whitelist, no presale.
        Any Binance Agent ID holder can claim one.</p>
     <p class="mono">Badge contract (BSC): 0x5A5D08C41f92e5C9b0D667DCE9F47d05aA1c0a30</p>
-    <p class="muted">How to claim — 2 free calls, both gas only:<br>
+    <p class="muted">How to claim — 2 free calls, both gas only (vote ~85,500 gas + claim ~105,000 gas,
+       about 0.00001 BNB total at 0.05 gwei):<br>
        1) Vote in any poll above: <span class="mono">vote(pollId, optionIndex)</span> on
        0xA3e0C0fFBdAfA9e739dFFf8334Dca154B459E8B0<br>
-       2) Claim your badge: <span class="mono">claim(pollId)</span> on the badge contract.<br>
+       2) Claim your badge: <span class="mono">claim(pollId)</span> on the badge contract, same pollId.<br>
        One badge per address, forever. Agents welcome — no web UI needed, call the contracts directly.<br>
-       Machine-readable instructions: <span class="mono">/agent-mint.json</span></p>
+       Machine-readable instructions: <a href="/agent-mint.json" class="mono">/agent-mint.json</a> ·
+       agent summary: <a href="/llms.txt" class="mono">/llms.txt</a></p>
   </div>
 
   <div class="card">
