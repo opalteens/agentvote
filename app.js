@@ -8,6 +8,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 const CONTRACT_ADDRESS = "0xA3e0C0fFBdAfA9e739dFFf8334Dca154B459E8B0"; // Deployed on BSC 2026-11-19
 
+// Voter Badge NFT (ERC-721, free claim for anyone who voted).
+// Deployed on BSC 2026-11-19, Sourcify exact match.
+const BADGE_ADDRESS = "0x5A5D08C41f92e5C9b0D667DCE9F47d05aA1c0a30";
+const BADGE_ABI = [
+  "function claim(uint256 pollId) returns (uint256)",
+  "function claimed(address) view returns (bool)",
+  "function nextTokenId() view returns (uint256)",
+  "function tokenURI(uint256 tokenId) view returns (string)",
+  "function metadataURI() view returns (string)",
+];
+
 const BSC_RPC = "https://bsc-rpc.publicnode.com";
 const BSC_CHAIN_ID = 56;
 const REGISTRY_ADDRESS = "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F"; // SPACE ID Agent ID
@@ -22,7 +33,59 @@ let provider = null;      // read provider (public RPC)
 let signer = null;        // write signer (user wallet)
 let contract = null;      // read contract
 let writeContract = null; // write contract
+let badgeRead = null;     // read badge contract
+let badgeWrite = null;    // write badge contract
 let account = null;
+let votedPollId = null;   // first poll id the connected wallet voted in
+
+const badgeDeployed = () => !BADGE_ADDRESS.startsWith("0x0000");
+
+async function updateBadgeCard() {
+  const btn = $("claimBadgeBtn");
+  const label = $("badgeStatus");
+  if (!badgeDeployed()) {
+    btn.disabled = true;
+    label.textContent = "Badge contract deploying soon — check back after launch.";
+    return;
+  }
+  if (!account || !badgeRead) {
+    btn.disabled = true;
+    label.textContent = "Connect your wallet to check your badge.";
+    return;
+  }
+  try {
+    if (await badgeRead.claimed(account)) {
+      btn.disabled = true;
+      label.textContent = "You already claimed your badge ✓ — one per address, forever.";
+      return;
+    }
+    if (votedPollId === null) {
+      btn.disabled = true;
+      label.textContent = "Vote in any poll first, then come back to claim your free badge.";
+      return;
+    }
+    btn.disabled = false;
+    label.textContent = "You voted in poll #" + votedPollId + " — your free badge is ready to claim.";
+  } catch (e) {
+    btn.disabled = true;
+    label.textContent = "Could not check badge status: " + (e.message || e);
+  }
+}
+
+async function claimBadge() {
+  if (!badgeWrite || votedPollId === null) { setStatus("Vote in a poll first, then claim your badge.", "err"); return; }
+  try {
+    setStatus("Claiming your free badge… confirm in your wallet.");
+    const tx = await badgeWrite.claim(votedPollId);
+    setStatus("Badge claim sent (" + tx.hash.slice(0, 18) + "…). Waiting for confirmation…");
+    const receipt = await tx.wait();
+    setStatus("Badge claimed! Tx confirmed in block " + receipt.blockNumber + ".", "ok");
+    await updateBadgeCard();
+  } catch (e) {
+    const msg = e.reason || e.shortMessage || e.message || String(e);
+    setStatus("Claim failed: " + msg, "err");
+  }
+}
 
 function setStatus(msg, kind) {
   statusEl.textContent = msg || "";
@@ -42,7 +105,11 @@ async function init() {
   $("contractInfo").textContent =
     "Contract: " + CONTRACT_ADDRESS +
     (CONTRACT_ADDRESS.startsWith("0x0000") ? "  (not deployed yet — see README)" : "") +
-    " · Registry: " + REGISTRY_ADDRESS;
+    " · Registry: " + REGISTRY_ADDRESS +
+    (badgeDeployed() ? " · Badge: " + BADGE_ADDRESS : " · Badge: deploying soon");
+  if (badgeDeployed()) {
+    badgeRead = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, provider);
+  }
   if (CONTRACT_ADDRESS.startsWith("0x0000")) {
     setStatus("Contract not deployed yet. Polls will load after deployment.", "err");
     $("pollList").innerHTML = "<p class='muted'>No contract deployed yet.</p>";
@@ -68,6 +135,9 @@ async function connect() {
     account = accounts[0];
     signer = await browserProvider.getSigner();
     writeContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    if (badgeDeployed()) {
+      badgeWrite = new ethers.Contract(BADGE_ADDRESS, BADGE_ABI, signer);
+    }
     $("account").textContent = "Connected: " + shortAddr(account);
     $("connectBtn").textContent = "Connected";
     // Check Agent ID holding (read-only, via registry).
@@ -78,6 +148,7 @@ async function connect() {
       ? "<span class='badge holder'>Agent ID holder ✓ — you can vote</span>"
       : "<span class='badge'>No Agent ID — you can view, but not vote</span>";
     setStatus(holder ? "You hold an Agent ID. You can vote." : "This wallet holds no Agent ID, so voting is disabled for it.", holder ? "ok" : "");
+    votedPollId = null;
     await loadPolls();
   } catch (e) {
     setStatus("Connect failed: " + (e.reason || e.message || e), "err");
@@ -98,6 +169,7 @@ async function loadPolls() {
       const total = votes.reduce((a, v) => a + Number(v), 0);
       let voted = false;
       if (account) { try { voted = await contract.hasVoted(id, account); } catch (_) {} }
+      if (voted && votedPollId === null) votedPollId = id;
       const card = document.createElement("div");
       card.className = "card";
       card.style.marginBottom = "12px";
@@ -120,6 +192,7 @@ async function loadPolls() {
     list.querySelectorAll("button.vote").forEach((btn) => {
       btn.addEventListener("click", () => doVote(btn.dataset.poll, btn.dataset.opt));
     });
+    await updateBadgeCard();
   } catch (e) {
     list.innerHTML = "<p class='muted'>Failed to load polls: " + escapeHtml(e.message || String(e)) + "</p>";
   }
@@ -171,5 +244,6 @@ function escapeHtml(s) {
 $("connectBtn").addEventListener("click", connect);
 $("createBtn").addEventListener("click", createPoll);
 $("refreshBtn").addEventListener("click", loadPolls);
+$("claimBadgeBtn").addEventListener("click", claimBadge);
 
 init();
